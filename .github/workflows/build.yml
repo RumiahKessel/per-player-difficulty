@@ -4,27 +4,67 @@
 # against bad commits.
 
 name: build
-on: [pull_request, push]
+
+on:
+  push:           # Build for all branches
+    branches: ['**']
+  pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-24.04
+    outputs:
+      branch: ${{ steps.extract_branch.outputs.branch }}
     steps:
-      - name: checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
-      - name: validate gradle wrapper
+
+      - name: Extract branch name
+        id: extract_branch
+        run: echo "branch=${GITHUB_REF##*/}" >> "$GITHUB_OUTPUT"
+
+      - name: Validate Gradle wrapper
         uses: gradle/actions/wrapper-validation@v4
-      - name: setup jdk
+
+      - name: Setup JDK
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'microsoft'
-      - name: make gradle wrapper executable
+
+      - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
-      - name: build
+
+      - name: Build mod
         run: ./gradlew build
-      - name: capture build artifacts
+
+      - name: Upload mod jars
         uses: actions/upload-artifact@v4
         with:
-          name: Artifacts
-          path: build/libs/
+          name: mod-jars
+          path: build/libs/*.jar
+
+  release:
+    needs: build
+    if: github.event_name == 'push'  # Only create release on push (not PRs)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: mod-jars
+          path: artifacts
+
+      - name: Extract branch name again
+        id: extract_branch
+        run: echo "branch=${GITHUB_REF##*/}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-${{ steps.extract_branch.outputs.branch }}
+          name: Latest Build (${{ steps.extract_branch.outputs.branch }})
+          files: artifacts/*.jar
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
