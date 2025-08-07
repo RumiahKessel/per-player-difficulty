@@ -9,7 +9,6 @@ on:
   push:           # Build for all branches
     branches: ['**']
   pull_request:
-
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -48,6 +47,8 @@ jobs:
     needs: build
     if: github.event_name == 'push'  # Only create release on push (not PRs)
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write  # Explicitly grant release permissions
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
