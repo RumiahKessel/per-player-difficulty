@@ -5,6 +5,10 @@
 
 name: build
 
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:           # Build for all branches
     branches: ['**']
@@ -67,5 +71,8 @@ jobs:
           name: Latest Build (${{ steps.extract_branch.outputs.branch }})
           files: artifacts/*.jar
           prerelease: true
+          draft: false
+          make_latest: false
+          fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
