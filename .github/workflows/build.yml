@@ -64,10 +64,16 @@ jobs:
         id: extract_branch
         run: echo "branch=${GITHUB_REF##*/}" >> "$GITHUB_OUTPUT"
 
-      - name: Delete existing release
-        continue-on-error: true
+      - name: Force update release tag
         run: |
-          gh release delete latest-${{ steps.extract_branch.outputs.branch }} --yes
+          # Clean slate: delete release and tag
+          gh release delete latest-${{ steps.extract_branch.outputs.branch }} --yes || true
+          git tag -d latest-${{ steps.extract_branch.outputs.branch }} || true
+          git push --delete origin latest-${{ steps.extract_branch.outputs.branch }} || true
+
+          # Create fresh tag at current commit
+          git tag latest-${{ steps.extract_branch.outputs.branch }}
+          git push origin latest-${{ steps.extract_branch.outputs.branch }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
