@@ -2,14 +2,18 @@ package net.chyme.perplayerdifficulty.mixins;
 
 import net.chyme.perplayerdifficulty.PlayerDifficultyManager;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.ServerWorldAccess;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.spawner.PhantomSpawner;
 import org.spongepowered.asm.mixin.Mixin;
@@ -52,6 +56,38 @@ public class MobMixin {
                 && canMobSpawn(type, world, spawnReason, pos, random);
 
         cir.setReturnValue(result);
+    }
+}
+
+@Mixin(MobEntity.class)
+class MobEntityMixin {
+
+    @Redirect(
+            method = "initEquipment",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;getDifficulty()Lnet/minecraft/world/Difficulty;"
+            )
+    )
+    private Difficulty useNearestPlayerDifficulty(World world) {
+        PlayerEntity player = world.getClosestPlayer((MobEntity) (Object) this, 128.0);
+        ServerPlayerEntity nearestPlayer = (player instanceof ServerPlayerEntity sp) ? sp : null;
+
+        return nearestPlayer != null
+                ? PlayerDifficultyManager.getPlayerDifficulty(nearestPlayer)
+                : world.getDifficulty(); // fallback
+    }
+}
+
+@Mixin(LivingEntity.class)
+class LivingEntityTargetMixin {
+    @Redirect(method = "canTarget(Lnet/minecraft/entity/LivingEntity;)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;getDifficulty()Lnet/minecraft/world/Difficulty;"))
+    private Difficulty redirectDifficultyForCanTarget(World world, LivingEntity target) {
+        // If target is a player, use their personal difficulty
+        if (target instanceof ServerPlayerEntity serverPlayer) {
+            return PlayerDifficultyManager.getPlayerDifficulty(serverPlayer);
+        }
+        return world.getDifficulty();
     }
 }
 
