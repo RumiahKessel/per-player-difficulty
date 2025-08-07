@@ -54,6 +54,10 @@ jobs:
     permissions:
       contents: write  # Explicitly grant release permissions
     steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -67,9 +71,6 @@ jobs:
           SAFE_BRANCH="${RAW_BRANCH//\//-}"
           echo "branch=$RAW_BRANCH" >> "$GITHUB_OUTPUT"
           echo "safe_branch=$SAFE_BRANCH" >> "$GITHUB_OUTPUT"
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
       - name: Force update release tag
         run: |
