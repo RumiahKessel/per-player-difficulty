@@ -8,7 +8,9 @@
     "MobMixin",
     "PhantomSpawnerMixin",
     "HungerAndDamageMixin",
-    "PlayerDamageMixin"
+    "PlayerDamageMixin",
+    "LivingEntityTargetMixin",
+    "MobEntityMixin"
   ],
   "client": [],
   "injectors": {
