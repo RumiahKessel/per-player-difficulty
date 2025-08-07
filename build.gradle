@@ -24,6 +24,19 @@ fabricApi {
 	}
 }
 
+loom {
+    runs {
+        server {
+            runDir = "run"
+        }
+    }
+
+    // Ensure refmap generation
+    mixin {
+        add sourceSets.main, "perplayerdifficulty.refmap.json"
+    }
+}
+
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
