@@ -5,7 +5,7 @@
 	"name": "Per Player Difficulty",
 	"description": "This is an example description! Tell everyone what your mod is about!",
 	"authors": [
-		"Me!"
+		"Chyme"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
@@ -13,14 +13,11 @@
 	},
 	"license": "Apache-2.0",
 	"icon": "assets/perplayerdifficulty/icon.png",
-	"environment": "*",
+	"environment": "server",
 	"entrypoints": {
-		"main": [
-			"net.chyme.perplayerdifficulty.PerPlayerDifficulty"
-		],
-		"fabric-datagen": [
-			"net.chyme.perplayerdifficulty.PerPlayerDifficultyDataGenerator"
-		]
+      "server": [
+        "net.chyme.perplayerdifficulty.PerPlayerDifficultyMod"
+      ]
 	},
 	"mixins": [
 		"perplayerdifficulty.mixins.json"

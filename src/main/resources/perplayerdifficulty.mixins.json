@@ -1,14 +1,17 @@
 {
-	"required": true,
-	"package": "net.chyme.perplayerdifficulty.mixin",
-	"compatibilityLevel": "JAVA_21",
-	"mixins": [
-		"ExampleMixin"
-	],
-	"injectors": {
-		"defaultRequire": 1
-	},
-	"overwrites": {
-		"requireAnnotations": true
-	}
+  "required": true,
+  "package": "net.chyme.perplayerdifficulty.mixins",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "perplayerdifficulty.refmap.json",
+  "mixins": [],
+  "server": [
+    "MobMixin",
+    "PhantomSpawnerMixin",
+    "HungerAndDamageMixin",
+    "PlayerDamageMixin"
+  ],
+  "client": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
 }
