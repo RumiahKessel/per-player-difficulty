@@ -64,6 +64,13 @@ jobs:
         id: extract_branch
         run: echo "branch=${GITHUB_REF##*/}" >> "$GITHUB_OUTPUT"
 
+      - name: Delete existing release
+        continue-on-error: true
+        run: |
+          gh release delete latest-${{ steps.extract_branch.outputs.branch }} --yes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
