@@ -62,26 +62,33 @@ jobs:
 
       - name: Extract branch name again
         id: extract_branch
-        run: echo "branch=${GITHUB_REF##*/}" >> "$GITHUB_OUTPUT"
+        run: |
+          RAW_BRANCH="${GITHUB_REF##*/}"
+          SAFE_BRANCH="${RAW_BRANCH//\//-}"
+          echo "branch=$RAW_BRANCH" >> "$GITHUB_OUTPUT"
+          echo "safe_branch=$SAFE_BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Force update release tag
         run: |
-          # Clean slate: delete release and tag
-          gh release delete latest-${{ steps.extract_branch.outputs.branch }} --yes || true
-          git tag -d latest-${{ steps.extract_branch.outputs.branch }} || true
-          git push --delete origin latest-${{ steps.extract_branch.outputs.branch }} || true
+          TAG="latest-${{ steps.extract_branch.outputs.safe_branch }}"
 
-          # Create fresh tag at current commit
-          git tag latest-${{ steps.extract_branch.outputs.branch }}
-          git push origin latest-${{ steps.extract_branch.outputs.branch }}
+          gh release delete "$TAG" --yes || true
+          git tag -d "$TAG" || true
+          git push --delete origin "$TAG" || true
+          
+          git tag "$TAG"
+          git push origin "$TAG"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: latest-${{ steps.extract_branch.outputs.branch }}
-          name: Latest Build (${{ steps.extract_branch.outputs.branch }})
+          tag_name: latest-${{ steps.extract_branch.outputs.safe_branch }}
+          name: Latest Build (${{ steps.extract_branch.outputs.safe_branch }})
           files: artifacts/*.jar
           prerelease: true
           draft: false
